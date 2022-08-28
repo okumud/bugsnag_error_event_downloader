@@ -1,0 +1,18 @@
+[
+  {
+    "header": "id",
+    "path": "$.id"
+  },
+  {
+    "header": "url",
+    "path": "$.url"
+  },
+  {
+    "header": "project_url",
+    "path": "$.project_url"
+  },
+  {
+    "header": "received_at",
+    "path": "$.received_at"
+  }
+]

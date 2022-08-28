@@ -1,0 +1,13 @@
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 2.6
+  NewCops: enable
+  Exclude:
+    - "bin/**/*"
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: true
+Style/GlobalStdStream:
+  Enabled: true
