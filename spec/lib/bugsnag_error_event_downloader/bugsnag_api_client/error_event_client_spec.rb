@@ -3,28 +3,23 @@
 RSpec.describe(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) do
   before do
     allow(BugsnagErrorEventDownloader::BugsnagApiClient::Client).to(receive(:new).and_return(bugsnag_api_client))
-    allow(BugsnagErrorEventDownloader::Option).to(receive(:new).and_return(option))
   end
 
-  let(:instance) { described_class.new }
+  let(:instance) { described_class.new(project_id: project_id, error_id: error_id) }
   let(:bugsnag_api_client) { instance_double(BugsnagErrorEventDownloader::BugsnagApiClient::Client) }
   let(:option) { instance_double(BugsnagErrorEventDownloader::Option) }
 
   describe(".initialize") do
     context "when project_id and error_id are exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-        allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-      end
+      let(:project_id) { "project_id" }
+      let(:error_id) { "error_id" }
 
       it { expect(instance).to(be_a(described_class)) }
     end
 
     context "when project_id is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return(nil))
-        allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-      end
+      let(:project_id) { nil }
+      let(:error_id) { "error_id" }
 
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
@@ -34,10 +29,8 @@ RSpec.describe(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) 
     end
 
     context "when error_id is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-        allow(option).to(receive(:get).with(:error_id).and_return(nil))
-      end
+      let(:project_id) { "project_id" }
+      let(:error_id) { nil }
 
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
@@ -50,10 +43,8 @@ RSpec.describe(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) 
   describe("#fetch_first") do
     subject(:fetch_first) { instance.fetch_first }
 
-    before do
-      allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-      allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-    end
+    let(:project_id) { "project_id" }
+    let(:error_id) { "error_id" }
 
     let(:error_event) do
       agent = Sawyer::Agent.new("https://api.bugsnag.com")
@@ -96,10 +87,8 @@ RSpec.describe(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) 
   describe "#fetch_all" do
     subject(:fetch_all) { instance.fetch_all }
 
-    before do
-      allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-      allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-    end
+    let(:project_id) { "project_id" }
+    let(:error_id) { "error_id" }
 
     let(:error_event_1) do
       agent = Sawyer::Agent.new("https://api.bugsnag.com")

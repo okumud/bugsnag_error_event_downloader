@@ -4,4 +4,4 @@
 $LOAD_PATH.unshift("#{__dir__}/../lib")
 require "bugsnag_error_event_downloader"
 
-BugsnagErrorEventDownloader::CLI.new.run
+BugsnagErrorEventDownloader::CLI.start(ARGV)

@@ -1,56 +1,46 @@
 # frozen_string_literal: true
 
-RSpec.describe(BugsnagErrorEventDownloader::CsvMap) do
-  let(:instance) { described_class.new }
+RSpec.describe(BugsnagErrorEventDownloader::Commands::GenerateCsvMap) do
+  let(:instance) do
+    described_class.new(
+      project_id: project_id,
+      error_id: error_id,
+      include_stacktrace: include_stacktrace,
+      include_breadcrumbs: include_breadcrumbs
+    )
+  end
   let(:client) { instance_double(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) }
-  let(:option) { instance_double(BugsnagErrorEventDownloader::Option) }
+  let(:include_stacktrace) { false }
+  let(:include_breadcrumbs) { false }
 
   before do
     allow(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient).to(receive(:new).and_return(client))
-    allow(BugsnagErrorEventDownloader::Option).to(receive(:new).and_return(option))
-    allow(option).to(receive(:get).with(:include_stacktrace))
-    allow(option).to(receive(:get).with(:include_breadcrumbs))
   end
 
   describe(".initialize") do
     context "when project_id and error_id are exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-        allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-      end
+      let(:project_id) { "project_id" }
+      let(:error_id) { "error_id" }
 
       it { expect(instance).to(be_a(described_class)) }
-    end
-
-    context "when project_id is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return(nil))
-        allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
-      end
 
       it do
-        expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
-          expect(error.attributes).to(eq(["project_id"]))
-        end)
-      end
-    end
-
-    context "when error_id is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-        allow(option).to(receive(:get).with(:error_id).and_return(nil))
-      end
-
-      it do
-        expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
-          expect(error.attributes).to(eq(["error_id"]))
-        end)
+        instance
+        expect(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient)
+          .to(have_received(:new)
+          .with(
+            project_id: project_id,
+            error_id: error_id
+          ))
       end
     end
   end
 
   describe("#generate") do
     subject(:generate) { instance.generate }
+
+    let(:project_id) { "project_id" }
+    let(:error_id) { "error_id" }
 
     let(:error_event) do
       agent = Sawyer::Agent.new("https://api.bugsnag.com")
@@ -72,8 +62,6 @@ RSpec.describe(BugsnagErrorEventDownloader::CsvMap) do
     end
 
     before do
-      allow(option).to(receive(:get).with(:project_id).and_return("project_id"))
-      allow(option).to(receive(:get).with(:error_id).and_return("error_id"))
       allow(client).to(receive(:fetch_first).and_return([error_event]))
     end
 

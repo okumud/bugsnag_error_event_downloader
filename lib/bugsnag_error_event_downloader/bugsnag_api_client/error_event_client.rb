@@ -5,18 +5,16 @@ require "forwardable"
 module BugsnagErrorEventDownloader
   module BugsnagApiClient
     class ErrorEventClient
-      def initialize
+      def initialize(project_id:, error_id:)
         @client = Client.new
 
-        option = Option.new
-
         errors = []
-        errors << "project_id" unless option.get(:project_id)
-        errors << "error_id" unless option.get(:error_id)
+        errors << "project_id" unless project_id
+        errors << "error_id" unless error_id
         raise ValidationError.new(attributes: errors) unless errors.empty?
 
-        @project_id = option.get(:project_id)
-        @error_id = option.get(:error_id)
+        @project_id = project_id
+        @error_id = error_id
       end
 
       attr_reader :client, :project_id, :error_id

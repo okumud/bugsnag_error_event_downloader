@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
-  let(:instance) { described_class.new }
+RSpec.describe(BugsnagErrorEventDownloader::Commands::ErrorEvents) do
+  let(:instance) { described_class.new(project_id: project_id, error_id: error_id, csv_map_path: csv_map_path) }
   let(:client) { instance_double(BugsnagErrorEventDownloader::BugsnagApiClient::ErrorEventClient) }
   let(:csv_converter) { instance_double(BugsnagErrorEventDownloader::Converter::CsvConverter) }
 
@@ -12,6 +12,10 @@ RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
 
   describe(".initialize") do
     context "when project_id, error_id and csv_map_path are exists" do
+      let(:project_id) { "project_id" }
+      let(:error_id) { "error_id" }
+      let(:csv_map_path) { "csv_map_path" }
+
       it { expect(instance).to(be_a(described_class)) }
     end
 
@@ -23,6 +27,10 @@ RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
             BugsnagErrorEventDownloader::ValidationError.new(attributes: ["project_id"])
           ))
       end
+
+      let(:project_id) { nil }
+      let(:error_id) { "error_id" }
+      let(:csv_map_path) { "csv_map_path" }
 
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
@@ -39,6 +47,10 @@ RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
             BugsnagErrorEventDownloader::ValidationError.new(attributes: ["csv_map_path"])
           ))
       end
+
+      let(:project_id) { "project_id" }
+      let(:error_id) { "error_id" }
+      let(:csv_map_path) { nil }
 
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
@@ -61,6 +73,10 @@ RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
           ))
       end
 
+      let(:project_id) { nil }
+      let(:error_id) { nil }
+      let(:csv_map_path) { nil }
+
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
           expect(error.attributes).to(contain_exactly("project_id", "error_id", "csv_map_path"))
@@ -71,6 +87,10 @@ RSpec.describe(BugsnagErrorEventDownloader::ErrorEventList) do
 
   describe("#get") do
     subject(:get) { instance.get }
+
+    let(:project_id) { "project_id" }
+    let(:error_id) { "error_id" }
+    let(:csv_map_path) { "csv_map_path" }
 
     let(:error_event) do
       agent = Sawyer::Agent.new("https://api.bugsnag.com")

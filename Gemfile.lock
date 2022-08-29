@@ -6,6 +6,8 @@ PATH
       csv
       json
       jsonpath
+      sorbet-runtime
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -101,6 +103,10 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    sorbet (0.4.4250)
+    sorbet-runtime (0.5.10382)
+    tapioca (0.0.1)
+    thor (1.2.1)
     unicode-display_width (2.2.0)
 
 PLATFORMS

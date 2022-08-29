@@ -2,26 +2,20 @@
 
 module BugsnagErrorEventDownloader
   class Option
-    require "optparse"
+    extend T::Sig
 
-    attr_reader :option, :args
+    attr_reader :option
 
     def initialize(args = ARGV)
       @option = {}
-      @args = args.dup
-      OptionParser.new do |o|
-        o.on("-t", "--token TOKEN", "with token option") { |v| @option[:token] = v }
-        o.on("--organization_id ORGANIZATION_ID", "organization id") { |v| @option[:organization_id] = v }
-        o.on("--project_id PROJECT_ID", "project id") { |v| @option[:project_id] = v }
-        o.on("--error_id ERROR_ID", "error id") { |v| @option[:error_id] = v }
-        o.on("--csv_map_path CSV_MAP", "csv map") { |v| @option[:csv_map_path] = v }
-        o.on("--include_stacktrace", "include stacktrace(optional)") { @option[:include_stacktrace] = true }
-        o.on("--include_breadcrumbs", "include breadcrumbs(optional)") { @option[:include_breadcrumbs] = true }
-        o.on("-h", "--help", "show this help") do |_v|
-          puts o
-          exit
+      args_tmp = args.dup
+      args_tmp.each.with_index do |arg, i|
+        if arg == "-t"
+          @option[:token] = args_tmp[i + 1]
+        else
+          arg.start_with?("--token=")
+          @option[:token] = arg.sub("--token=", "")
         end
-        o.parse!(@args)
       end
     end
 
@@ -31,16 +25,6 @@ module BugsnagErrorEventDownloader
 
     def get(name)
       option[name]
-    end
-
-    def subcommand
-      subcommands.first
-    end
-
-    private
-
-    def subcommands
-      args
     end
   end
 end

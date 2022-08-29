@@ -6,13 +6,12 @@ module BugsnagErrorEventDownloader
       class CsvMapNotFound < StandardError; end
       class JSONInCsvMapIsInvalid < StandardError; end
 
-      def initialize
-        option = Option.new
+      def initialize(csv_map_path:)
         errors = []
-        errors << "csv_map_path" unless option.get(:csv_map_path)
+        errors << "csv_map_path" unless csv_map_path
         raise ValidationError.new(attributes: errors) unless errors.empty?
 
-        @csv_map = parse_csv_map(option.get(:csv_map_path))
+        @csv_map = parse_csv_map(csv_map_path)
       end
 
       attr_reader :csv_map

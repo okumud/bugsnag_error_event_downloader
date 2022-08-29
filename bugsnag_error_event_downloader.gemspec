@@ -39,6 +39,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency("csv")
   spec.add_runtime_dependency("json")
   spec.add_runtime_dependency("jsonpath")
+  spec.add_runtime_dependency("sorbet-runtime")
+  spec.add_runtime_dependency("thor")
 
   spec.add_development_dependency("pry")
   spec.add_development_dependency("pry-byebug")

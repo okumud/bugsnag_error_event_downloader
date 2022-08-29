@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe(BugsnagErrorEventDownloader::Converter::CsvConverter) do
-  let(:instance) { described_class.new }
+  let(:instance) { described_class.new(csv_map_path: csv_map_path) }
   let(:option) { instance_double(BugsnagErrorEventDownloader::Option) }
 
   before do
@@ -9,18 +9,14 @@ RSpec.describe(BugsnagErrorEventDownloader::Converter::CsvConverter) do
   end
 
   describe(".initialize") do
-    context "when csv_map_path are exists" do
-      before do
-        allow(option).to(receive(:get).with(:csv_map_path).and_return("spec/fixtures/sample_csv_map.json"))
-      end
+    context "when a valid JSON file exists in the csv_map_path" do
+      let(:csv_map_path) { "spec/fixtures/sample_csv_map.json" }
 
       it { expect(instance).to(be_a(described_class)) }
     end
 
-    context "when csv_map_path is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:csv_map_path).and_return(nil))
-      end
+    context "when csv_map_path parameter is not given" do
+      let(:csv_map_path) { nil }
 
       it do
         expect { instance }.to(raise_error(BugsnagErrorEventDownloader::ValidationError) do |error|
@@ -29,18 +25,14 @@ RSpec.describe(BugsnagErrorEventDownloader::Converter::CsvConverter) do
       end
     end
 
-    context "when the csv_map_file is not exists" do
-      before do
-        allow(option).to(receive(:get).with(:csv_map_path).and_return("spec/fixtures/not_exists.json"))
-      end
+    context "when file does not exist in csv_map_path" do
+      let(:csv_map_path) { "spec/fixtures/not_exists.json" }
 
       it { expect { instance }.to(raise_error(described_class::CsvMapNotFound)) }
     end
 
-    context "when the csv_map_file is invalid" do
-      before do
-        allow(option).to(receive(:get).with(:csv_map_path).and_return("spec/fixtures/invalid_csv_map.json"))
-      end
+    context "when a invalid JSON file exists in the csv_map_path" do
+      let(:csv_map_path) { "spec/fixtures/invalid_csv_map.json" }
 
       it { expect { instance }.to(raise_error(described_class::JSONInCsvMapIsInvalid)) }
     end
@@ -49,9 +41,7 @@ RSpec.describe(BugsnagErrorEventDownloader::Converter::CsvConverter) do
   describe("#convert") do
     subject(:convert) { instance.convert(events) }
 
-    before do
-      allow(option).to(receive(:get).with(:csv_map_path).and_return("spec/fixtures/sample_csv_map.json"))
-    end
+    let(:csv_map_path) { "spec/fixtures/sample_csv_map.json" }
 
     let(:events) do
       agent = Sawyer::Agent.new("https://api.bugsnag.com")
