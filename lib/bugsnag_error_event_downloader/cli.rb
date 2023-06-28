@@ -41,14 +41,19 @@ module BugsnagErrorEventDownloader
     desc("generate_csv_map", "Generate csv map.")
     option :project_id,
       aliases: ["-p"],
-      required: true,
+      required: false,
       type: :string,
       desc: "Path to the project_id"
     option :error_id,
       aliases: ["-e"],
-      required: true,
+      required: false,
       type: :string,
       desc: "Path to the error_id"
+    option :url,
+      aliases: ["-u"],
+      required: false,
+      type: :string,
+      desc: "Bugsnag url to event"
     option :include_stacktrace,
       required: false,
       type: :boolean,
@@ -61,8 +66,7 @@ module BugsnagErrorEventDownloader
       default: false
     def generate_csv_map
       Output.puts Commands::GenerateCsvMap.new(
-        project_id: options[:project_id],
-        error_id: options[:error_id],
+        **project_identifier,
         include_stacktrace: options[:include_stacktrace],
         include_breadcrumbs: options[:include_breadcrumbs]
       ).generate
@@ -79,14 +83,19 @@ module BugsnagErrorEventDownloader
     desc("error_events", "Show error events.")
     option :project_id,
       aliases: ["-p"],
-      required: true,
+      required: false,
       type: :string,
       desc: "Path to the project_id"
     option :error_id,
       aliases: ["-e"],
-      required: true,
+      required: false,
       type: :string,
       desc: "Path to the error_id"
+    option :url,
+      aliases: ["-u"],
+      required: false,
+      type: :string,
+      desc: "Bugsnag url to event"
     option :csv_map_path,
       aliases: ["-c"],
       required: true,
@@ -94,8 +103,7 @@ module BugsnagErrorEventDownloader
       desc: "Path to the csv_map_path"
     def error_events
       Output.puts Commands::ErrorEvents.new(
-        project_id: options[:project_id],
-        error_id: options[:error_id],
+        **project_identifier,
         csv_map_path: options[:csv_map_path]
       ).get
     rescue BugsnagErrorEventDownloader::NoAuthTokenError
@@ -144,6 +152,47 @@ module BugsnagErrorEventDownloader
     def puts_error_bugsnag_api_not_found
       Output.warn("Resource not found in Bugsnag.")
       Exit.run(status: 1)
+    end
+
+    def project_identifier
+      if options[:url].nil?
+        project_identifier_from_parameter
+      else
+        project_identifier_from_bugsnag_url(options[:url])
+      end
+    end
+
+    def project_identifier_from_parameter
+      raise ValidationError.new(
+        message: 'Specify project_id or error_id',
+        attributes: ["project_id", "error_id"]
+      ) if options[:project_id].nil? || options[:error_id].nil?
+      {
+        project_id: options[:project_id],
+        error_id: options[:error_id],
+      }
+    end
+
+    def project_identifier_from_bugsnag_url(url)
+      # scheme, userinfo, host, port, registry, path, opaque, query, fragment
+      _, organization_name, project_name, _, error_id = URI.parse(url).path.split('/')
+      {
+        project_id: find_project_id(find_organization_id(organization_name), project_name),
+        error_id: error_id,
+      }
+    end
+
+    def find_organization_id(organization_name)
+      Commands::Organizations.new.find_id_by_name!(organization_name)
+    rescue ValidationError 
+      raise ValidationError.new(message: 'Specify valid bugsnag url',attributes: ["url"])
+    end
+
+    def find_project_id(organization_id, project_name)
+      Commands::Projects.new(organization_id: organization_id)
+        .find_id_by_name!(project_name)
+    rescue ValidationError 
+      raise ValidationError.new(message: 'Specify valid bugsnag url',attributes: ["url"])
     end
   end
 end

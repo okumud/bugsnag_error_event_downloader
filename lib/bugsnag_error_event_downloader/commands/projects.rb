@@ -14,9 +14,25 @@ module BugsnagErrorEventDownloader
       end
 
       def get
-        client.projects(organization_id).map do |project|
+        projects.map do |project|
           [project.id, project.slug].join(",")
         end
+      end
+
+      def find_id_by_name!(name)
+        id = projects.find do |project|
+          project.slug == name
+        end&.id
+        raise ValidationError.new(
+          message: 'Specify valid bugsnag url',attributes: ["url"]
+        ) unless id
+        id
+      end
+
+      private
+
+      def projects
+        @projects ||= client.projects(organization_id)
       end
     end
   end
